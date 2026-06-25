@@ -46,7 +46,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         aws ecr create-repository --repository-name backend-ventas --region ${{ env.AWS_REGION }} || echo "El repositorio backend-ventas ya existe."
-        docker build -t $ECR_REGISTRY/backend-ventas:latest ./back-Ventas_SpringBoot
+        docker build -t $ECR_REGISTRY/backend-ventas:latest ./back-Ventas_SpringBoot/Springboot-API-REST
         docker push $ECR_REGISTRY/backend-ventas:latest
 
     # ==========================================
@@ -57,7 +57,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         aws ecr create-repository --repository-name backend-despachos --region ${{ env.AWS_REGION }} || echo "El repositorio backend-despachos ya existe."
-        docker build -t $ECR_REGISTRY/backend-despachos:latest ./back-Despachos_SpringBoot
+        docker build -t $ECR_REGISTRY/backend-despachos:latest ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
         docker push $ECR_REGISTRY/backend-despachos:latest
 
     # ==========================================
