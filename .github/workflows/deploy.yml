@@ -31,7 +31,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-        docker build -t $ECR_REGISTRY/front-despacho:latest ./proyecto\ semestral/front_despacho
+        docker build -t $ECR_REGISTRY/front-despacho:latest ./proyecto semestral/front_despacho
         docker push $ECR_REGISTRY/front-despacho:latest
 
     - name: Connect to EKS Cluster
