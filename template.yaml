@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Infraestructura para EP3 DevOps - EKS y ECR en AWS Academy'
+
+Parameters:
+  SubnetAZ1:
+    Type: AWS::EC2::Subnet::Id
+    Description: 'Selecciona una Subnet pública de tu VPC en la Zona de Disponibilidad 1'
+  SubnetAZ2:
+    Type: AWS::EC2::Subnet::Id
+    Description: 'Selecciona una Subnet pública de tu VPC en la Zona de Disponibilidad 2'
+
+Resources:
+  # Repositorios ECR para guardar las imágenes de tu proyecto .rar
+  RepoFrontend:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: front-despacho
+
+  RepoBackendVentas:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: back-ventas
+
+  # El Clúster EKS Principal
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: duoc-devops-cluster-cfn
+      Version: '1.30'
+      RoleArn: 'arn:aws:iam::431889466039:role/LabRole' # Reemplaza con tu ID de cuenta
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref SubnetAZ1
+          - !Ref SubnetAZ2
+
+  # Grupo de Nodos (Instancias EC2 que ejecutarán tus Apps)
+  EKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref EKSCluster
+      NodegroupName: duoc-managed-workers-cfn
+      NodeRole: 'arn:aws:iam::431889466039:role/LabRole' # Reemplaza con tu ID de cuenta
+      InstanceTypes:
+        - t3.medium
+      ScalingConfig:
+        MinSize: 1
+        DesiredSize: 2
+        MaxSize: 4
+      Subnets:
+        - !Ref SubnetAZ1
+        - !Ref SubnetAZ2
+
+Outputs:
+  ClusterName:
+    Value: !Ref EKSCluster
+  FrontendECR:
+    Value: !GetAtt RepoFrontend.RepositoryUri

@@ -1,0 +1,44 @@
+name: Deploy via CloudFormation & Kubernetes
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER_NAME: duoc-devops-cluster-cfn
+
+jobs:
+  ci-cd-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build & Push Frontend to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker build -t $ECR_REGISTRY/front-despacho:latest ./proyecto\ semestral/front_despacho
+        docker push $ECR_REGISTRY/front-despacho:latest
+
+    - name: Connect to EKS Cluster
+      run: |
+        aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+    - name: Deploy Manifests to EKS
+      run: |
+        kubectl apply -f k8s/secrets.yaml
+        kubectl apply -f k8s/deployment.yaml
