@@ -27,13 +27,42 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    # ==========================================
+    # 1. COMPONENTE: FRONTEND DESPACHO
+    # ==========================================
     - name: Build & Push Frontend to ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-        docker build -t $ECR_REGISTRY/front-despacho:latest ./Springboot-API-REST
+        aws ecr create-repository --repository-name front-despacho --region ${{ env.AWS_REGION }} || echo "El repositorio front-despacho ya existe."
+        docker build -t $ECR_REGISTRY/front-despacho:latest ./front_despacho
         docker push $ECR_REGISTRY/front-despacho:latest
 
+    # ==========================================
+    # 2. COMPONENTE: BACKEND VENTAS
+    # ==========================================
+    - name: Build & Push Backend Ventas to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        aws ecr create-repository --repository-name backend-ventas --region ${{ env.AWS_REGION }} || echo "El repositorio backend-ventas ya existe."
+        docker build -t $ECR_REGISTRY/backend-ventas:latest ./Springboot-API-REST
+        docker push $ECR_REGISTRY/backend-ventas:latest
+
+    # ==========================================
+    # 3. COMPONENTE: BACKEND DESPACHOS
+    # ==========================================
+    - name: Build & Push Backend Despachos to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        aws ecr create-repository --repository-name backend-despachos --region ${{ env.AWS_REGION }} || echo "El repositorio backend-despachos ya existe."
+        docker build -t $ECR_REGISTRY/backend-despachos:latest ./back-Despachos_SpringBoot
+        docker push $ECR_REGISTRY/backend-despachos:latest
+
+    # ==========================================
+    # DESPLIEGUE EN EL CLÚSTER KUBERNETES (EKS)
+    # ==========================================
     - name: Connect to EKS Cluster
       run: |
         aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
