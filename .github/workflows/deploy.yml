@@ -46,7 +46,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         aws ecr create-repository --repository-name backend-ventas --region ${{ env.AWS_REGION }} || echo "El repositorio backend-ventas ya existe."
-        docker build -t $ECR_REGISTRY/backend-ventas:latest ./Springboot-API-REST
+        docker build -t $ECR_REGISTRY/backend-ventas:latest ./back-Ventas_SpringBoot
         docker push $ECR_REGISTRY/backend-ventas:latest
 
     # ==========================================
