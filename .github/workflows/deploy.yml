@@ -45,7 +45,7 @@ jobs:
         ECR_REPOSITORY: proyectosemestral-back-ventas
         IMAGE_TAG: latest
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./back-Ventas_SpringBoot
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./back-Ventas_SpringBoot/Springboot-API-REST
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     # 6. Construir y subir el Backend de Despachos
@@ -55,5 +55,5 @@ jobs:
         ECR_REPOSITORY: proyectosemestral-back-despachos
         IMAGE_TAG: latest
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./back-Despachos_SpringBoot
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
