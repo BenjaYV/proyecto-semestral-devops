@@ -1,0 +1,87 @@
+services:
+  # --- BASE DE DATOS (MySQL) ---
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db-semestral
+    restart: always
+    environment:
+      MYSQL_DATABASE: proyecto_semestral
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: user_proyecto
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # Este chequeo le avisa a Docker cuándo la base de datos realmente acepta conexiones
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user_proyecto", "-puser_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  # --- MICROSERVICIO: VENTAS ---
+  back-ventas:
+    build:
+      context: ./back-Ventas_SpringBoot/Springboot-API-REST
+      dockerfile: Dockerfile
+    container_name: service-ventas
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      DB_ENDPOINT: mysql-db
+      DB_PORT: 3306
+      DB_NAME: proyecto_semestral
+      DB_USERNAME: user_proyecto
+      DB_PASSWORD: user_password
+    depends_on:
+      mysql-db:
+        condition: service_healthy # Espera obligatoriamente a que MySQL esté listo y sano
+    networks:
+      - app-network
+
+  # --- MICROSERVICIO: DESPACHOS ---
+  back-despachos:
+    build:
+      context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+      dockerfile: Dockerfile
+    container_name: service-despachos
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      DB_ENDPOINT: mysql-db
+      DB_PORT: 3306
+      DB_NAME: proyecto_semestral
+      DB_USERNAME: user_proyecto
+      DB_PASSWORD: user_password
+    depends_on:
+      mysql-db:
+        condition: service_healthy # Espera obligatoriamente a que MySQL esté listo y sano
+    networks:
+      - app-network
+
+  # --- FRONTEND ---
+  frontend:
+    build:
+      context: ./front_despacho
+      dockerfile: Dockerfile
+    container_name: front-despacho-app
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - back-ventas
+      - back-despachos
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
